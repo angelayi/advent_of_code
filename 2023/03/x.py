@@ -7,9 +7,18 @@ def is_symbol(s):
     return s not in (".", "\n") and (not s.isdigit())
 
 
+def has_symbol(puzzle, r, c) -> bool:
+    is_valid = False
+    for i in range(r - 1, r + 2):
+        for j in range(c - 1, c + 2):
+            if i >= 0 and i < len(puzzle) and j >= 0 and j < len(puzzle[i]):
+                is_valid = is_valid or is_symbol(puzzle[i][j])
+    return is_valid
+
+
 def main1(file_name):
     with open(file_name, "r") as f:
-        puzzle = []
+        puzzle: List[List[str]] = []
         while input := f.readline():
             puzzle.append([*input])
         
@@ -24,46 +33,7 @@ def main1(file_name):
             while c < len(puzzle[r]):
                 if puzzle[r][c].isdigit():
                     curr_num = curr_num * 10 + int(puzzle[r][c])
-
-                    if c > 0:
-                        left = puzzle[r][c-1]
-                        logging.debug(f"left: {left}, {is_symbol(left)}")
-                        is_valid = is_valid or is_symbol(left)
-
-                        if r > 0:
-                            left_up = puzzle[r - 1][c - 1]
-                            logging.debug(f"left_up: {left_up}, {is_symbol(left_up)}")
-                            is_valid = is_valid or is_symbol(left_up)
-
-                        if r < len(puzzle) - 1:
-                            left_down = puzzle[r + 1][c - 1]
-                            logging.debug(f"left_down: {left_down}, {is_symbol(left_down)}")
-                            is_valid = is_valid or is_symbol(left_down)
-
-                    if c < len(puzzle[r]) - 1:
-                        right = puzzle[r][c + 1]
-                        logging.debug(f"right: {right}, {is_symbol(right)}")
-                        is_valid = is_valid or is_symbol(right)
-
-                        if r > 0:
-                            right_up = puzzle[r - 1][c + 1]
-                            logging.debug(f"right_up: {right_up}, {is_symbol(right_up)}")
-                            is_valid = is_valid or is_symbol(right_up)
-
-                        if r < len(puzzle) - 1:
-                            right_down = puzzle[r + 1][c + 1]
-                            logging.debug(f"right_down: {right_down}, {is_symbol(right_down)}")
-                            is_valid = is_valid or is_symbol(right_down)
-
-                    if r > 0:
-                        up = puzzle[r - 1][c]
-                        logging.debug(f"up: {up}, {is_symbol(up)}")
-                        is_valid = is_valid or is_symbol(up)
-
-                    if r < len(puzzle) - 1:
-                        down = puzzle[r + 1][c]
-                        logging.debug(f"down: {down}, {is_symbol(down)}")
-                        is_valid = is_valid or is_symbol(down)
+                    is_valid = is_valid or has_symbol(puzzle, r, c)
 
                 else:
                     if is_valid:
@@ -76,6 +46,16 @@ def main1(file_name):
                 c += 1
 
         print(sum_)
+
+
+def has_gears(puzzle, r, c) -> Set[Tuple[int, int]]:
+    gears = set()
+    for i in range(r - 1, r + 2):
+        for j in range(c - 1, c + 2):
+            if i >= 0 and i < len(puzzle) and j >= 0 and j < len(puzzle[i]):
+                if puzzle[i][j] == "*":
+                    gears.add((i, j))
+    return gears
 
 
 def main2(file_name):
@@ -95,54 +75,7 @@ def main2(file_name):
             while c < len(puzzle[r]):
                 if puzzle[r][c].isdigit():
                     curr_num = curr_num * 10 + int(puzzle[r][c])
-
-                    if c > 0:
-                        left = puzzle[r][c-1]
-                        logging.debug(f"left: {left}, {is_symbol(left)}")
-                        if left == "*":
-                            gears.add((r, c - 1))
-
-                        if r > 0:
-                            left_up = puzzle[r - 1][c - 1]
-                            logging.debug(f"left_up: {left_up}, {is_symbol(left_up)}")
-                            if left_up == "*":
-                                gears.add((r - 1, c - 1))
-
-                        if r < len(puzzle) - 1:
-                            left_down = puzzle[r + 1][c - 1]
-                            logging.debug(f"left_down: {left_down}, {is_symbol(left_down)}")
-                            if left_down == "*":
-                                gears.add((r + 1, c - 1))
-
-                    if c < len(puzzle[r]) - 1:
-                        right = puzzle[r][c + 1]
-                        logging.debug(f"right: {right}, {is_symbol(right)}")
-                        if right == "*":
-                            gears.add((r, c + 1))
-
-                        if r > 0:
-                            right_up = puzzle[r - 1][c + 1]
-                            logging.debug(f"right_up: {right_up}, {is_symbol(right_up)}")
-                            if right_up == "*":
-                                gears.add((r - 1, c + 1))
-
-                        if r < len(puzzle) - 1:
-                            right_down = puzzle[r + 1][c + 1]
-                            logging.debug(f"right_down: {right_down}, {is_symbol(right_down)}")
-                            if right_down == "*":
-                                gears.add((r + 1, c + 1))
-
-                    if r > 0:
-                        up = puzzle[r - 1][c]
-                        logging.debug(f"up: {up}, {is_symbol(up)}")
-                        if up == "*":
-                            gears.add((r - 1, c))
-
-                    if r < len(puzzle) - 1:
-                        down = puzzle[r + 1][c]
-                        logging.debug(f"down: {down}, {is_symbol(down)}")
-                        if down == "*":
-                            gears.add((r + 1, c))
+                    gears.update(has_gears(puzzle, r, c))
 
                 else:
                     if len(gears) > 0:
