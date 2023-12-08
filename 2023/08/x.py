@@ -1,45 +1,38 @@
 import argparse
 import logging
 import math
-from dataclasses import dataclass
-from typing import Dict, List
-
-@dataclass
-class Node:
-    name: str
-    left: str
-    right: str
+from typing import Dict, List, Tuple
 
 
-def parse_node(node_str) -> Node:
+def parse_node(node_str) -> Tuple[str, str, str]:
     node_split = node_str.split(" = ")
     node_name = node_split[0]
     node_children_split = node_split[1].split(", ")
     left = node_children_split[0][1:]
     right = node_children_split[1][:-2]
     logging.debug(f"{node_name}, {left}, {right}")
-    return Node(node_name, left, right)
+    return node_name, left, right
 
 
 def main1(file_name):
-    graph: Dict[str, Node] = {}
+    graph: Dict[str, Tuple[str, str]] = {}
 
     with open(file_name, "r") as f:
         path = [*f.readline()][:-1]
         logging.debug(path)
         f.readline()  # empty line
         while node_str := f.readline():
-            node = parse_node(node_str)
-            graph[node.name] = node
+            node, left, right = parse_node(node_str)
+            graph[node] = (left, right)
     
     num_steps = 0
-    curr_node = graph["AAA"]
+    curr_node = "AAA"
     path_idx = 0
-    while curr_node.name != "ZZZ":
+    while curr_node != "ZZZ":
         if path[path_idx] == "L":
-            curr_node = graph[curr_node.left]
+            curr_node = graph[curr_node][0]
         elif path[path_idx] == "R":
-            curr_node = graph[curr_node.right]
+            curr_node = graph[curr_node][1]
         
         path_idx = (path_idx + 1) % len(path)
         num_steps += 1
@@ -48,17 +41,22 @@ def main1(file_name):
     
 
 def main2(file_name):
-    graph: Dict[str, Node] = {}
-    start_nodes: List[Node] = []
+    """
+    Note: Part 2 is implemented s.t. it assumes that it takes a equal length to
+    go from XXA -> XXZ and XXZ -> XXZ. But it's possible these two are different,
+    in which case idk how to solve this wheeeee
+    """
+    graph: Dict[str, Tuple[str, str]] = {}
+    start_nodes: List[str] = []
 
     with open(file_name, "r") as f:
         path = [*f.readline()][:-1]
         logging.debug(path)
         f.readline()  # empty line
         while node_str := f.readline():
-            node = parse_node(node_str)
-            graph[node.name] = node
-            if node.name[-1] == "A":
+            node, left, right = parse_node(node_str)
+            graph[node] = (left, right)
+            if node[-1] == "A":
                 start_nodes.append(node)
     
     num_steps: List[int] = []
@@ -66,11 +64,11 @@ def main2(file_name):
     for node in start_nodes: 
         path_idx = 0
         steps = 0
-        while node.name[-1] != "Z":
+        while node[-1] != "Z":
             if path[path_idx] == "L":
-                node = graph[node.left]
+                node = graph[node][0]
             elif path[path_idx] == "R":
-                node = graph[node.right]
+                node = graph[node][1]
             
             path_idx = (path_idx + 1) % len(path)
             steps += 1
